@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { createContext, useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 
@@ -7,6 +7,8 @@ const AuthContext = createContext();
 export default AuthContext;
 
 export const AuthProvider = ({ children }) => {
+  let [loading, setLoading] = useState(true)
+
   let [authTokens, setAuthTokens] = useState(() =>
     localStorage.getItem("authTokens")
       ? JSON.parse(localStorage.getItem("authTokens"))
@@ -51,6 +53,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   let updateToken = async () => {
+    console.log('update token called!')
     let response = await fetch("http://localhost:8000/api/token/refresh/", {
       method: "POST",
       headers: {
@@ -73,13 +76,21 @@ export const AuthProvider = ({ children }) => {
 
   let contextData = {
     user,
+    authTokens,
     loginUser,
     logoutUser
   };
 
   useEffect(()=> {
+    let fourMinutes = 1000 * 60 * 4
+    let interval = setInterval(() => {
+      if (authTokens) {
+        updateToken()
+      }
+    }, fourMinutes)
+    return () => clearInterval(interval)
 
-  }, [authToken])
+  }, [authTokens, loading])
 
   return (
     <AuthContext.Provider value={contextData}>{children}</AuthContext.Provider>
