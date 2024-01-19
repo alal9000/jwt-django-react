@@ -80,6 +80,8 @@ export const AuthProvider = ({ children }) => {
   let contextData = {
     user,
     authTokens,
+    setAuthTokens,
+    setUser,
     loginUser,
     logoutUser
   };
